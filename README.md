@@ -25,5 +25,9 @@ The Avro serializer and deserializer provided by Confluent.Kafka.Avro was used t
 ```
 dotnet tool install -g Confluent.Apache.Avro.AvroGen
 ```
+```
 avrogen -s banking.financial_events-key.json .
+```
+```
 avrogen -s banking.financial_events-value.json .
+```
