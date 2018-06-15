@@ -1,4 +1,4 @@
-KafkaAvro
+Kafka-FE-Consumer
 ==================================
 
 This sample shows how to consume RB Financial events (FE) using Kafka.

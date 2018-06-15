@@ -1,0 +1,1 @@
+{"type":"record","name":"FINANCIAL_EVENTS","namespace":"key.SOURCEDB.BANKING","fields":[{"name":"EVENT_ID","type":{"type":"long","logicalType":"DECIMAL","dbColumnName":"EVENT_ID","precision":18,"scale":0},"default":0}]}

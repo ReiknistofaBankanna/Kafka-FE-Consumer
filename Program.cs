@@ -12,34 +12,52 @@ namespace KafkaAvro
 {
     class Program
     {
-        public static void Main()
+        public static void Main(string[] args)
         {
 
-            var schemaRegistryUrl = "http://172.28.17.89:8081";
-            var bootstrapServers = "172.28.17.89:29092";
-            var topicName = "ISB.banking.financial_events";
+            if (args.Length != 4)
+            {
+                Console.WriteLine("Usage: .. bootstrapServers schemaRegistryUrl topicName groupId");
+                return;
+            }
+
+            var bootstrapServers = args[0];
+            var schemaRegistryUrl = args[1];
+            var topicName = args[2];
+            var groupId = args[3];
 
 
             var consumerConfig = new Dictionary<string, object>
             {
                 { "bootstrap.servers", bootstrapServers },
-                //{ "group.id", Guid.NewGuid() },
-                { "group.id", "test-consumer-group1" },
+                { "group.id", groupId },
                 { "schema.registry.url", schemaRegistryUrl },
-                { "auto.commit.interval.ms", 5000 },
-                //{ "auto.offset.reset", "earliest" }
-                { "auto.offset.reset", "beginning" }
+                { "auto.offset.reset", "earliest" },
+                { "enable.auto.commit", false }
             };
 
-            using (var consumer = new Consumer<key.SOURCEDB.BANKING.FINANCIAL_EVENTS, FINANCIAL_EVENTS>(consumerConfig, new AvroDeserializer<key.SOURCEDB.BANKING.FINANCIAL_EVENTS>(), new AvroDeserializer<FINANCIAL_EVENTS>()))
+            Console.WriteLine("Connecting to Kafka...");
+            var consumer = new Consumer<key.SOURCEDB.BANKING.FINANCIAL_EVENTS, FINANCIAL_EVENTS>(consumerConfig, new AvroDeserializer<key.SOURCEDB.BANKING.FINANCIAL_EVENTS>(), new AvroDeserializer<FINANCIAL_EVENTS>());
+            Console.WriteLine("Connected!");
+
+            consumer.CommitAsync();
+
+            Console.WriteLine("Listening...");
+            using (consumer)
             {
 
-
-                
-
-
-                consumer.OnMessage += (o, e)
-                    => Console.WriteLine($"event_id: {e.Key.EVENT_ID}, amount: {e.Value.AMOUNT}, agreement_id: {e.Value.AGREEMENT_ID}, created_date: {e.Value.CREATED_DATE}");
+                consumer.OnMessage += (o, e) =>
+                {
+                    try
+                    { 
+                        Console.WriteLine($"Message processed: event_id: {e.Key.EVENT_ID}, amount: {e.Value.AMOUNT}, agreement_id: {e.Value.AGREEMENT_ID}, created_date: {e.Value.CREATED_DATE}");
+                        consumer.CommitAsync(); //Commit read                      
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Exception: " + ex.Message);
+                    }
+                };
                 
                 consumer.OnError += (_, e)
                     => Console.WriteLine("Error: " + e.Reason);
@@ -48,7 +66,7 @@ namespace KafkaAvro
                     => Console.WriteLine("Consume error: " + e.Error.Reason);
                 
                 consumer.OnPartitionEOF += (o, e)
-                    => Console.WriteLine("DONE");
+                    => Console.WriteLine("Partition EOF");
 
                 consumer.Subscribe(topicName);
 
