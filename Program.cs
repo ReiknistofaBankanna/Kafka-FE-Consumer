@@ -40,8 +40,6 @@ namespace KafkaAvro
             var consumer = new Consumer<key.SOURCEDB.BANKING.FINANCIAL_EVENTS, FINANCIAL_EVENTS>(consumerConfig, new AvroDeserializer<key.SOURCEDB.BANKING.FINANCIAL_EVENTS>(), new AvroDeserializer<FINANCIAL_EVENTS>());
             Console.WriteLine("Connected!");
 
-            consumer.CommitAsync();
-
             Console.WriteLine("Listening...");
             using (consumer)
             {
